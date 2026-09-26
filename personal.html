@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Farish Hayqal — Transmission from Sector 7</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    /* ============ ROOT ============ */
+    :root {
+      --void: #07050c;
+      --void-2: #100820;
+      --plasma: #ff3d8a;
+      --magenta: #c026d3;
+      --cosmic: #6a1b9a;
+      --nebula: #3a162c;
+      --deep-blue: #1a1a4a;
+      --star: #f5e9ff;
+      --ink: #ece8f5;
+      --ink-dim: #b6acc8;
+      --ink-faint: #6b6280;
+      --glass: rgba(255, 255, 255, 0.06);
+      --glass-border: rgba(255, 255, 255, 0.14);
+      --pill: #0d0817;
+      --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+      --serif: 'Instrument Serif', Georgia, serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--mono);
+      background: var(--void);
+      color: var(--ink);
+      line-height: 1.7;
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* ============ COSMIC BACKDROP (fixed, applies to whole page) ============ */
+    .cosmos {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(ellipse 80% 60% at 15% 0%, #c026d3 0%, transparent 50%),
+        radial-gradient(ellipse 70% 50% at 95% 20%, #3a162c 0%, transparent 55%),
+        radial-gradient(ellipse 60% 40% at 50% 50%, #1a1040 0%, transparent 60%),
+        radial-gradient(ellipse 90% 50% at 80% 95%, #ff2d6f 0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 10% 90%, #2a0a3a 0%, transparent 60%),
+        linear-gradient(180deg, #08050f 0%, #0c0719 100%);
+      filter: saturate(1.05);
+    }
+
+    /* Subtle slow drift on the gradient */
+    .cosmos::before {
+      content: '';
+      position: absolute;
+      inset: -10%;
+      background:
+        radial-gradient(circle 300px at 30% 40%, rgba(192, 38, 211, 0.25), transparent 60%),
+        radial-gradient(circle 250px at 70% 70%, rgba(255, 61, 138, 0.18), transparent 60%);
+      animation: drift 28s ease-in-out infinite alternate;
+      mix-blend-mode: screen;
+    }
+
+    @keyframes drift {
+      0%   { transform: translate(0, 0) scale(1); }
+      50%  { transform: translate(40px, -30px) scale(1.08); }
+      100% { transform: translate(-30px, 20px) scale(0.95); }
+    }
+
+    /* Starfield */
+    .stars {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background-image:
+        radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.9), transparent),
+        radial-gradient(1px 1px at 25% 65%, rgba(255,255,255,0.7), transparent),
+        radial-gradient(1.5px 1.5px at 40% 30%, rgba(255,255,255,1), transparent),
+        radial-gradient(1px 1px at 58% 80%, rgba(255,230,255,0.8), transparent),
+        radial-gradient(1px 1px at 70% 15%, rgba(255,255,255,0.9), transparent),
+        radial-gradient(1.5px 1.5px at 82% 55%, rgba(255,255,255,1), transparent),
+        radial-gradient(1px 1px at 90% 35%, rgba(255,200,255,0.85), transparent),
+        radial-gradient(1px 1px at 5% 85%, rgba(255,255,255,0.7), transparent),
+        radial-gradient(1px 1px at 33% 92%, rgba(255,255,255,0.85), transparent),
+        radial-gradient(1px 1px at 50% 8%, rgba(255,255,255,0.9), transparent);
+      background-size: 100% 100%;
+      animation: twinkle 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes twinkle {
+      0%   { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+
+    /* Noise / grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.05;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ============ NAV ============ */
+    nav.topnav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 22px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(8, 5, 15, 0.55);
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .brand {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--ink);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--plasma);
+      box-shadow: 0 0 12px var(--plasma), 0 0 24px var(--plasma);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .navlinks {
+      display: flex;
+      list-style: none;
+      gap: 36px;
+    }
+
+    .navlinks a {
+      color: var(--ink-dim);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 500;
+      position: relative;
+      padding: 8px 0;
+      transition: color 0.3s ease;
+    }
+
+    .navlinks a::before {
+      content: '◦';
+      margin-right: 8px;
+      color: var(--plasma);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .navlinks a:hover {
+      color: var(--ink);
+    }
+    .navlinks a:hover::before { opacity: 1; }
+
+    /* ============ SECTION FRAME ============ */
+    section {
+      padding: 140px 48px;
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--plasma);
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+
+    .section-tag::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--plasma);
+    }
+
+    h3 {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      font-size: clamp(48px, 7vw, 96px);
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 40px;
+    }
+
+    /* ============ HELLO / HERO ============ */
+    #hello {
+      align-items: center;
+      text-align: center;
+      padding-top: 180px;
+    }
+
+    .orbit-wrap {
+      position: relative;
+      width: 280px;
+      margin: 40px auto 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .orbit {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      animation: rotate 30s linear infinite;
+      pointer-events: none;
+    }
+    .orbit.o1 { width: 280px; height: 280px; }
+    .orbit.o2 { width: 246px; height: 246px; animation-duration: 22s; animation-direction: reverse; border-color: rgba(255, 61, 138, 0.2); }
+
+    .orbit::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--plasma);
+      box-shadow: 0 0 16px var(--plasma);
+      transform: translateX(-50%);
+    }
+    .orbit.o2::after {
+      background: #6dd3ff;
+      box-shadow: 0 0 16px #6dd3ff;
+    }
+
+    @keyframes rotate {
+      to { transform: rotate(360deg); }
+    }
+
+    .avatar {
+      width: 200px;
+      height: auto;
+      border-radius: 24px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      box-shadow:
+        0 0 60px rgba(192, 38, 211, 0.4),
+        0 0 120px rgba(255, 61, 138, 0.2);
+      position: relative;
+      z-index: 2;
+      display: block;
+    }
+
+    /* Fallback when image is missing — show a "planet" */
+    .avatar-fallback {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      position: relative;
+      z-index: 2;
+      background:
+        radial-gradient(circle at 30% 30%, #ff7eb3, #c026d3 40%, #3a162c 80%, #0c0719);
+      box-shadow:
+        0 0 60px rgba(192, 38, 211, 0.5),
+        0 0 120px rgba(255, 61, 138, 0.25),
+        inset -20px -20px 40px rgba(0,0,0,0.5),
+        inset 10px 10px 30px rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+    }
+    .avatar-fallback::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background:
+        radial-gradient(ellipse 80px 12px at 30% 45%, rgba(255,255,255,0.15), transparent),
+        radial-gradient(ellipse 60px 8px at 60% 65%, rgba(255,255,255,0.1), transparent);
+    }
+
+    .hero-greeting {
+      font-size: 12px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--plasma);
+      margin-bottom: 12px;
+    }
+
+    .hero-name {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: clamp(56px, 9vw, 120px);
+      line-height: 1;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      margin-bottom: 24px;
+    }
+
+    .hero-name .accent {
+      color: transparent;
+      background: linear-gradient(135deg, #ff3d8a, #c026d3, #6a1b9a);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 13px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .scroll-cue {
+      margin-top: 80px;
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: var(--ink-faint);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .scroll-cue::after {
+      content: '';
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--plasma), transparent);
+      animation: scrollLine 2s ease-in-out infinite;
+    }
+    @keyframes scrollLine {
+      0%, 100% { opacity: 0.3; transform: scaleY(0.6); }
+      50%      { opacity: 1; transform: scaleY(1); }
+    }
+
+    /* ============ WHO ============ */
+    #who { padding-top: 100px; padding-bottom: 100px; }
+    #who h3 { text-align: center; }
+
+    .panels {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      max-width: 1280px;
+      margin: 0 auto;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--glass);
+      backdrop-filter: blur(24px) saturate(140%);
+      -webkit-backdrop-filter: blur(24px) saturate(140%);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s;
+    }
+
+    .panel:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255, 61, 138, 0.4);
+    }
+
+    .panel-num {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--plasma);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .panel-num::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, rgba(255, 61, 138, 0.4), transparent);
+    }
+
+    .panel p {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--ink-dim);
+      margin-bottom: 28px;
+    }
+
+    .panel-img {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      border: 1px solid var(--glass-border);
+      filter: saturate(1.05) contrast(1.02);
+      display: block;
+    }
+
+    /* Image fallback as a generated mini-scene */
+    .panel-img-fallback {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      border-radius: 16px;
+      border: 1px solid var(--glass-border);
+      position: relative;
+      overflow: hidden;
+    }
+    .panel-img-fallback.s1 {
+      background:
+        radial-gradient(circle at 70% 30%, #ff3d8a 0%, #c026d3 40%, #2a0a3a 80%);
+    }
+    .panel-img-fallback.s2 {
+      background:
+        radial-gradient(circle at 30% 60%, #6dd3ff 0%, #6a1b9a 50%, #1a1040 90%);
+    }
+    .panel-img-fallback.s3 {
+      background:
+        radial-gradient(circle at 50% 50%, #ffb86c 0%, #c026d3 50%, #3a162c 90%);
+    }
+    .panel-img-fallback::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, white, transparent),
+        radial-gradient(1px 1px at 60% 70%, white, transparent),
+        radial-gradient(1px 1px at 80% 20%, white, transparent),
+        radial-gradient(1px 1px at 40% 80%, white, transparent);
+      opacity: 0.7;
+    }
+
+    /* ============ WHERE ============ */
+    #where {
+      align-items: center;
+      text-align: center;
+    }
+    .where-card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--glass);
+      backdrop-filter: blur(24px) saturate(140%);
+      -webkit-backdrop-filter: blur(24px) saturate(140%);
+      border: 1px solid var(--glass-border);
+      border-radius: 32px;
+      padding: 60px 48px;
+      position: relative;
+    }
+
+    .where-card::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 20%; right: 20%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--plasma), transparent);
+    }
+
+    .where-card p {
+      font-size: 14px;
+      color: var(--ink-dim);
+      margin: 28px 0 36px;
+      line-height: 1.9;
+    }
+
+    .coords {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--ink-faint);
+      margin-bottom: 8px;
+    }
+
+    .pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 32px;
+      background: var(--pill);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 100px;
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pill-btn:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 61, 138, 0.5);
+      box-shadow: 0 8px 32px rgba(255, 61, 138, 0.25);
+      color: var(--ink);
+    }
+
+    .pill-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: var(--plasma);
+    }
+
+    /* ============ CONTACT ============ */
+    #contact {
+      padding: 140px 48px;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+      align-items: start;
+    }
+
+    .contact-info p {
+      font-size: 14px;
+      color: var(--ink-dim);
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+
+    .contact-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 13px;
+      color: var(--ink);
+    }
+
+    .contact-row .ico {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .contact-row .ico svg {
+      width: 14px;
+      height: 14px;
+      fill: var(--plasma);
+    }
+    .contact-row .label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 2px;
+    }
+    .contact-row .value {
+      font-size: 13px;
+      color: var(--ink);
+      word-break: break-all;
+    }
+
+    .contact-form {
+      background: var(--glass);
+      backdrop-filter: blur(24px) saturate(140%);
+      -webkit-backdrop-filter: blur(24px) saturate(140%);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 40px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .field {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 8px;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 13px;
+      transition: border-color 0.3s, background 0.3s;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--plasma);
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: var(--ink-faint);
+    }
+
+    .send-btn {
+      margin-top: 16px;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, #ff3d8a, #c026d3);
+      border: none;
+      border-radius: 100px;
+      color: white;
+      font-family: var(--mono);
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      float: right;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .send-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255, 61, 138, 0.4);
+    }
+
+    /* ============ FOOTER ============ */
+    footer {
+      padding: 80px 48px 40px;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      position: relative;
+    }
+
+    footer .to-top {
+      display: inline-grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      color: var(--plasma);
+      text-decoration: none;
+      margin-bottom: 24px;
+      transition: transform 0.3s;
+    }
+    footer .to-top:hover { transform: translateY(-4px); }
+    footer .to-top svg { width: 16px; height: 16px; fill: currentColor; }
+
+    footer p {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    /* ============ FLOATING PLAY MUSIC BUTTON (matches reference) ============ */
+    .play-music {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 99;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 22px;
+      background: rgba(13, 8, 23, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 100px;
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .play-music:hover {
+      border-color: var(--plasma);
+      box-shadow: 0 8px 24px rgba(255, 61, 138, 0.3);
+    }
+    .play-music svg { width: 14px; height: 14px; fill: var(--plasma); }
+
+    /* ============ REVEAL ANIMATIONS ============ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 900px) {
+      nav.topnav { padding: 18px 24px; }
+      .navlinks { gap: 20px; }
+      .navlinks a { font-size: 10px; letter-spacing: 2px; }
+      section { padding: 100px 24px; }
+      .panels { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; gap: 32px; }
+      .field-row { grid-template-columns: 1fr; }
+      .where-card { padding: 40px 28px; }
+      .contact-form { padding: 28px; }
+    }
+
+    @media (max-width: 560px) {
+      .navlinks { display: none; }
+      .hero-name { font-size: 48px; }
+      h3 { font-size: 40px; }
+      .orbit-wrap { width: 220px; height: 220px; }
+      .avatar, .avatar-fallback { width: 160px; height: 160px; }
+    }
+  </style>
+</head>
+<body id="myPage">
+
+  <!-- Cosmic backdrop layers -->
+  <div class="cosmos"></div>
+  <div class="stars"></div>
+
+  <!-- NAV -->
+  <nav class="topnav">
+    <a href="#myPage" class="brand">Me</a>
+    <ul class="navlinks">
+      <li><a href="#hello">Hello</a></li>
+      <li><a href="#who">Who</a></li>
+      <li><a href="#where">Where</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HELLO -->
+  <section id="hello">
+    <div class="hero-greeting reveal">⟡ Transmission · 001 ⟡</div>
+    <h3 class="reveal" style="margin-bottom: 8px;">Hello</h3>
+
+    <div class="orbit-wrap reveal">
+      <div class="orbit o1"></div>
+      <div class="orbit o2"></div>
+      <!-- Try to load the original image; fallback to generated planet -->
+      <img src="hayqal.jpeg" alt="Farish Hayqal" class="avatar"
+           onerror="this.outerHTML='&lt;div class=&quot;avatar-fallback&quot;&gt;&lt;/div&gt;'">
+    </div>
+
+    <div class="hero-name reveal">I'm <span class="accent">Farish Hayqal</span></div>
+    <p class="hero-sub reveal">drifting through code · building from stardust</p>
+
+    <div class="scroll-cue reveal">SCROLL TO EXPLORE</div>
+  </section>
+
+  <!-- WHO -->
+  <section id="who">
+    <div style="text-align:center;">
+      <div class="section-tag reveal">Orbit · 002</div>
+      <h3 class="reveal">Who Am I?</h3>
+    </div>
+
+    <div class="panels">
+      <article class="panel reveal">
+        <div class="panel-num">⟡ Fragment 01</div>
+        <p>I am a passionate and motivated individual who enjoys turning ideas into reality.
+          I love exploring technology and building creative projects that challenge my skills
+          and help me grow as a developer..</p>
+        <img src="gambar2 (1).jpeg" alt="Image" class="panel-img"
+             onerror="this.outerHTML='&lt;div class=&quot;panel-img-fallback s1&quot;&gt;&lt;/div&gt;'">
+      </article>
+
+      <article class="panel reveal">
+        <div class="panel-num">⟡ Fragment 02</div>
+        <p>I constantly strive to learn new things and improve myself every day.
+          Whether it is programming, problem solving, or discovering new tools,
+          I believe learning is a lifelong journey..</p>
+        <img src="gambar2 (2).jpeg" alt="Image" class="panel-img"
+             onerror="this.outerHTML='&lt;div class=&quot;panel-img-fallback s2&quot;&gt;&lt;/div&gt;'">
+      </article>
+
+      <article class="panel reveal">
+        <div class="panel-num">⟡ Fragment 03</div>
+        <p>Outside of academics, I love sports and staying active.
+          Playing football keeps me energetic, disciplined, and teaches me
+          teamwork and perseverance.</p>
+        <img src="gambar2 (3).jpeg" alt="Image" class="panel-img"
+             onerror="this.outerHTML='&lt;div class=&quot;panel-img-fallback s3&quot;&gt;&lt;/div&gt;'">
+      </article>
+    </div>
+  </section>
+
+  <!-- WHERE -->
+  <section id="where">
+    <div class="section-tag reveal">Coordinates · 003</div>
+    <h3 class="reveal">Where To Find Me?</h3>
+
+    <div class="where-card reveal">
+      <div class="coords">LAT 2.9821° N · LON 101.5602° E</div>
+      <p>I am based in Bandar Saujana Putra, Selangor and always open to new opportunities, collaborations, and meaningful connections.
+        If you would like to work together or simply say hello, feel free to reach out through the contact section below..</p>
+      <a href="#contact" class="pill-btn">
+        <svg viewBox="0 0 24 24"><path d="M12 2l1.4 4.2L18 7l-3.5 3 1.2 4.8L12 12.5 8.3 14.8 9.5 10 6 7l4.6-.8L12 2z"/></svg>
+        Search
+      </a>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div style="text-align:center; margin-bottom: 60px;">
+      <div class="section-tag reveal">Signal · 004</div>
+      <h3 class="reveal">Contact Me</h3>
+    </div>
+
+    <div class="contact-grid">
+      <div class="contact-info reveal">
+        <p>Contact ume and I'll get back to you within 24 hours.</p>
+
+        <div class="contact-row">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></div>
+          <div>
+            <div class="label">Location</div>
+            <div class="value">Bandar Saujana Putra, Selangor</div>
+          </div>
+        </div>
+
+        <div class="contact-row">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.4 21 3 13.6 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg></div>
+          <div>
+            <div class="label">Phone</div>
+            <div class="value">+6017 6266923</div>
+          </div>
+        </div>
+
+        <div class="contact-row">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div>
+          <div>
+            <div class="label">Email</div>
+            <div class="value">hayqalfarish7@gmail.com</div>
+          </div>
+        </div>
+      </div>
+
+      <form class="contact-form reveal" onsubmit="event.preventDefault(); alert('Signal sent across the void ⟡');">
+        <div class="field-row">
+          <div class="field">
+            <label for="name">Name</label>
+            <input class="form-control" id="name" name="name" placeholder="Name" type="text" required>
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input class="form-control" id="email" name="email" placeholder="Email" type="email" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="comments">Comment</label>
+          <textarea class="form-control" id="comments" name="comments" placeholder="Comment" rows="5"></textarea>
+        </div>
+
+        <button class="send-btn" type="submit">
+          Send
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+        <div style="clear:both"></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="#myPage" class="to-top" title="To Top">
+      <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+    </a>
+    <p>Copyright © Your Website 2017</p>
+  </footer>
+
+  <!-- Floating play music button (matches reference image) -->
+  <button class="play-music" onclick="this.querySelector('span').textContent = this.querySelector('span').textContent === 'Play Music' ? 'Pause Music' : 'Play Music'">
+    <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
+    <span>Play Music</span>
+  </button>
+
+  <script>
+    // Reveal-on-scroll
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('in'), i * 80);
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Trigger hero reveals immediately
+    window.addEventListener('load', () => {
+      document.querySelectorAll('#hello .reveal').forEach((el, i) => {
+        setTimeout(() => el.classList.add('in'), 100 + i * 150);
+      });
+    });
+  </script>
+
+</body>
+</html>
